@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}PaperSieve — Search{% endblock %}
+
+{% block content %}
+
+  <section class="hero hero--compact">
+    <h1>Search arXiv papers</h1>
+    <p>Filter by keyword, author or category. No account needed to save favorites.</p>
+  </section>
+
+  <form class="search-form" role="search" aria-label="Search arXiv papers"
+        method="get" action="{{ url_for('main.search') }}">
+    <div class="search-form__grid">
+      <div class="field">
+        <label for="q">Keyword</label>
+        <input type="text" id="q" name="q" value="{{ query }}" placeholder="e.g. transformer attention">
+      </div>
+      <div class="field">
+        <label for="author">Author</label>
+        <input type="text" id="author" name="author" value="{{ author }}" placeholder="e.g. Vaswani">
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          {% for value, label in categories.items() %}
+          <option value="{{ value }}" {% if value == category %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="sort">Sort by</label>
+        {# Selecting "All categories" with no keyword/author is blocked
+           before this form can even be submitted (see the validation in
+           app.js and the matching check in routes.py) — arXiv's API 500s
+           on that exact combination, regardless of sort order. So this
+           field is never silently overridden: whatever's selected here
+           is what's actually sent to arXiv, and `sort` always reflects
+           what was used for the results shown below. #}
+        <select id="sort" name="sort">
+          {% for value, label in sort_options.items() %}
+          <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="search-form__actions">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+  </form>
+
+  {% if error %}
+    <p class="alert" role="alert">{{ error }}</p>
+  {% endif %}
+
+  {% if results %}
+    <section class="results" aria-labelledby="results-heading">
+      <div class="results-heading">
+        <h2 id="results-heading">Results</h2>
+        <span class="paper-card__meta">
+          {{ results.papers|length }} of {{ results.total_results }} results
+        </span>
+      </div>
+
+      {% if results.papers %}
+        {% for paper in results.papers %}
+        <article class="paper-card">
+          {% if paper.primary_category %}
+          <span class="paper-card__tag">{{ paper.primary_category }}</span>
+          {% endif %}
+          <h3><a href="{{ paper.link }}" target="_blank" rel="noopener noreferrer">{{ paper.title }}</a></h3>
+          <p class="paper-card__summary">
+            {{ paper.summary[:280] }}{% if paper.summary|length > 280 %}&hellip;{% endif %}
+          </p>
+          <p class="paper-card__meta">
+            {{ paper.authors|join(', ') }} &middot; Published {{ paper.published[:10] }}
+          </p>
+          <div class="paper-card__actions">
+            <a class="btn btn-secondary" href="{{ paper.pdf_link or paper.link }}" target="_blank" rel="noopener noreferrer">
+              {{ 'View PDF' if paper.pdf_link else 'View on arXiv' }}
+            </a>
+
+            {# Both forms are always rendered; whichever one doesn't match
+               the paper's current state starts out hidden. JS toggles
+               which one is visible in place, so saving/removing a favorite
+               doesn't require a full page reload — see app/static/app.js.
+               Without JS, only the correct one is visible from the start,
+               and both still submit normally as full-page POSTs. #}
+            <form method="post" action="{{ url_for('main.remove_favorite') }}"
+                  class="favorite-form" data-action="remove"
+                  {% if paper.arxiv_id not in favorite_ids %}hidden{% endif %}>
+              <input type="hidden" name="arxiv_id" value="{{ paper.arxiv_id }}">
+              <input type="hidden" name="next" value="{{ request.full_path }}">
+              <button type="submit" class="btn btn-secondary" aria-pressed="true">
+                <span aria-hidden="true">★</span> Remove from favorites
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('main.add_favorite') }}"
+                  class="favorite-form" data-action="add"
+                  {% if paper.arxiv_id in favorite_ids %}hidden{% endif %}>
+              <input type="hidden" name="arxiv_id" value="{{ paper.arxiv_id }}">
+              <input type="hidden" name="title" value="{{ paper.title }}">
+              <input type="hidden" name="authors" value="{{ paper.authors|join('; ') }}">
+              <input type="hidden" name="summary" value="{{ paper.summary }}">
+              <input type="hidden" name="link" value="{{ paper.link }}">
+              <input type="hidden" name="pdf_link" value="{{ paper.pdf_link or '' }}">
+              <input type="hidden" name="published" value="{{ paper.published }}">
+              <input type="hidden" name="next" value="{{ request.full_path }}">
+              <button type="submit" class="btn btn-secondary" aria-pressed="false">
+                <span aria-hidden="true">☆</span> Save to favorites
+              </button>
+            </form>
+          </div>
+        </article>
+        {% endfor %}
+
+        {% if total_pages > 1 %}
+        <nav class="pagination" aria-label="Search results pages">
+          {% if page > 1 %}
+            <a class="btn btn-secondary" href="{{ url_for('main.search', q=query, author=author, category=category, sort=sort, page=page-1) }}">&larr; Previous</a>
+          {% endif %}
+          <span class="paper-card__meta">Page {{ page }} of {{ total_pages }}</span>
+          {% if page < total_pages %}
+            <a class="btn btn-secondary" href="{{ url_for('main.search', q=query, author=author, category=category, sort=sort, page=page+1) }}">Next &rarr;</a>
+          {% endif %}
+        </nav>
+        {% endif %}
+      {% else %}
+        <p>No papers matched your search. Try different keywords or remove some filters.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+
+{% endblock %}

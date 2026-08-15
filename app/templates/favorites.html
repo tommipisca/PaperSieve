@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}PaperSieve — Your favorites{% endblock %}
+
+{% block content %}
+
+  <section class="hero hero--compact">
+    <h1>Your favorites</h1>
+    <p>
+      Saved papers are tied to this browser, not to an account. Clearing
+      your cookies or switching device will lose this list &mdash; use
+      &ldquo;Export favorites&rdquo; below to keep a copy.
+    </p>
+  </section>
+
+  <section class="results" aria-labelledby="favorites-heading">
+    <div class="results-heading">
+      <h2 id="favorites-heading" tabindex="-1">
+        {{ favorites|length }} saved paper{{ '' if favorites|length == 1 else 's' }}
+      </h2>
+      {% if favorites %}
+      <a class="btn btn-secondary" href="{{ url_for('main.export_favorites') }}">Export favorites (.bib)</a>
+      {% endif %}
+    </div>
+
+    {% if favorites %}
+      {% for favorite in favorites %}
+      <article class="paper-card">
+        <h3><a href="{{ favorite.link }}" target="_blank" rel="noopener noreferrer">{{ favorite.title }}</a></h3>
+        <p class="paper-card__summary">
+          {{ favorite.summary[:280] }}{% if favorite.summary|length > 280 %}&hellip;{% endif %}
+        </p>
+        <p class="paper-card__meta">
+          {{ favorite.authors }} &middot; Published {{ favorite.published[:10] }}
+        </p>
+        <div class="paper-card__actions">
+          <a class="btn btn-secondary" href="{{ favorite.pdf_link or favorite.link }}" target="_blank" rel="noopener noreferrer">
+            {{ 'View PDF' if favorite.pdf_link else 'View on arXiv' }}
+          </a>
+          <form method="post" action="{{ url_for('main.remove_favorite') }}"
+                class="favorite-form" data-action="remove">
+            <input type="hidden" name="arxiv_id" value="{{ favorite.arxiv_id }}">
+            <input type="hidden" name="next" value="{{ url_for('main.favorites') }}">
+            <button type="submit" class="btn btn-secondary" aria-pressed="true">
+              <span aria-hidden="true">★</span> Remove from favorites
+            </button>
+          </form>
+        </div>
+      </article>
+      {% endfor %}
+    {% else %}
+      <p>
+        You haven&rsquo;t saved any papers yet.
+        <a href="{{ url_for('main.search') }}">Search arXiv</a>
+        and click &ldquo;Save to favorites&rdquo; on the papers you want to keep.
+      </p>
+    {% endif %}
+  </section>
+
+{% endblock %}

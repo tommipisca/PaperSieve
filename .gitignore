@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Flask instance folder (contains the local SQLite database)
+instance/
+
+# Environment variables
+.env
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Claude Code / Claude configuration
+.claude/
+CLAUDE.md
+.mcp.json

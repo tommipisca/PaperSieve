@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PaperSieve{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body{% if active_page %} data-page="{{ active_page }}"{% endif %}>
+
+  {% block skip_link %}
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  {% endblock %}
+
+  {% block header %}
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="{{ url_for('main.index') }}">
+        <span class="brand__name">PaperSieve</span>
+        <span class="brand__tagline">arXiv papers, sifted</span>
+      </a>
+      <nav class="main-nav" aria-label="Primary">
+        <ul>
+          <li>
+            <a href="{{ url_for('main.search') }}" {% if active_page == 'search' %}aria-current="page"{% endif %}>Search</a>
+          </li>
+          <li>
+            <a href="{{ url_for('main.favorites') }}" {% if active_page == 'favorites' %}aria-current="page"{% endif %}>Favorites</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  {% endblock %}
+
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block footer %}
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span>PaperSieve is open source, released under the MIT license.</span>
+      <a href="https://github.com/tommipisca/PaperSieve" target="_blank" rel="noopener noreferrer">View source on GitHub</a>
+    </div>
+  </footer>
+  {% endblock %}
+
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+
+</body>
+</html>

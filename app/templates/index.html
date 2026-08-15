@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}PaperSieve — Find and save arXiv papers{% endblock %}
+
+{# The landing page is a deliberately header-less splash screen: nothing
+   precedes <main>, so there's nothing for a skip-link to skip either. #}
+{% block skip_link %}{% endblock %}
+{% block header %}{% endblock %}
+
+{% block content %}
+
+  <section class="hero hero--marketing">
+    <h1 class="brand-mark">PaperSieve</h1>
+    <p class="tagline">Find the papers that matter, skip the noise</p>
+    <p>
+      PaperSieve is a free, open-source tool for searching arXiv and keeping
+      a personal list of the papers worth coming back to.<br>
+      Built by a
+      student, for students and researchers. No account required.
+    </p>
+  </section>
+
+  <div class="cta-section">
+    <a class="btn btn-primary btn-large" href="{{ url_for('main.search') }}">
+      Start searching
+    </a>
+  </div>
+
+  {# Compact icon row: keeps the whole landing page inside one viewport
+     (no scrolling needed). Each icon is a real <button> so it's reachable
+     and operable by keyboard; its full explanation lives in aria-label,
+     so screen reader users get it regardless of whether the visual
+     tooltip is showing. The tooltip div itself is aria-hidden and purely
+     decorative — a hover/focus-only convenience for sighted users. #}
+  <section class="features" aria-label="What PaperSieve offers">
+    <div class="feature-icon-wrap">
+      <button type="button" class="feature-icon"
+              aria-label="Search every category: look across all of arXiv - computer science, physics, maths, biology and more - from one simple form.">
+        <span aria-hidden="true">🔍</span>
+      </button>
+      <div class="feature-tooltip" aria-hidden="true">
+        <strong>Search every category</strong>
+        <p>Look across all of arXiv &mdash; computer science, physics, maths, biology and more &mdash; from one simple form.</p>
+      </div>
+    </div>
+    <div class="feature-icon-wrap">
+      <button type="button" class="feature-icon"
+              aria-label="Save what matters: keep a personal reading list of favorite papers. No sign-up, no password - it just works.">
+        <span aria-hidden="true">⭐</span>
+      </button>
+      <div class="feature-tooltip" aria-hidden="true">
+        <strong>Save what matters</strong>
+        <p>Keep a personal reading list of favorite papers. No sign-up, no password &mdash; it just works.</p>
+      </div>
+    </div>
+    <div class="feature-icon-wrap">
+      <button type="button" class="feature-icon"
+              aria-label="Free and open source: built in the open under the MIT license. Read the code, suggest changes, or fork it for your own use.">
+        <span aria-hidden="true">🌱</span>
+      </button>
+      <div class="feature-tooltip" aria-hidden="true">
+        <strong>Free and open source</strong>
+        <p>Built in the open under the MIT license. Read the code, suggest changes, or fork it for your own use.</p>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
